@@ -1,20 +1,38 @@
-'use client';
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+const inter = Inter({ subsets: ["latin"] });
 
-export function ThemeToggle() {
-    const { setTheme, theme } = useTheme();
+export const metadata: Metadata = {
+  title: "ค้นหา Ikigai ของคุณ",
+  description: "เครื่องมือค้นหา Ikigai 'เหตุผลของการมีชีวิตอยู่' ด้วยปรัชญาชีวิตของญี่ปุ่น",
+};
 
-    return (
-        <button
-            className="bg-container text-foreground hover:bg-secondary/80 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label="สลับธีม"
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="th" suppressHydrationWarning>
+      <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 transition-colors duration-300`} suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
         >
-            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">สลับธีม</span>
-        </button>
-    );
-} 
+          <div className="min-h-screen">
+            {children}
+          </div>
+          <div className="fixed bottom-6 right-6 z-50">
+            <ThemeToggle />
+          </div>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
