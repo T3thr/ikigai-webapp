@@ -18,15 +18,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="th" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.className} bg-gray-50 dark:bg-gray-900 transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange
+          disableTransitionOnChange={false}
         >
-          {children}
-          <div className="fixed bottom-5 right-5 z-50">
+          <div className="min-h-screen">
+            {children}
+          </div>
+          <div className="fixed bottom-6 right-6 z-50">
             <ThemeToggle />
           </div>
         </ThemeProvider>
