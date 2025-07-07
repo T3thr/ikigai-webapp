@@ -13,33 +13,40 @@ const kanit = Kanit({
   weight: ['300', '400', '600', '700'],
 });
 
-// Initial data for the Ikigai diagram, now including intersections
+// ข้อมูลเริ่มต้นสำหรับแผนภาพอิคิไก (ว่างเปล่าเพื่อให้ผู้ใช้กรอกเอง)
 const initialIkigaiData: IkigaiData = {
-    love: 'ครอบครัว, การเรียนรู้สิ่งใหม่',
-    goodAt: 'สกิลด้าน IT, การแก้ปัญหา',
-    paidFor: 'พัฒนาซอฟต์แวร์, สอนหนังสือ',
-    worldNeeds: 'นวัตกรรม, ความยั่งยืน',
-    passion: 'ใช้ทักษะ IT ดูแลครอบครัว',
-    mission: 'สร้างนวัตกรรมเพื่อครอบครัวและสังคม',
-    profession: 'อาชีพนักพัฒนาซอฟต์แวร์',
-    vocation: 'พัฒนานวัตกรรมสร้างรายได้',
+    love: '',
+    goodAt: '',
+    paidFor: '',
+    worldNeeds: '',
+    passion: '',
+    mission: '',
+    profession: '',
+    vocation: '',
 };
 
 const IkigaiPage: NextPage = () => {
-    // State for modal, loading, and API response
+    // State สำหรับ modal, loading, และ API response
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [apiResponse, setApiResponse] = useState('');
     const [apiError, setApiError] = useState('');
     const [ikigaiData, setIkigaiData] = useState(initialIkigaiData);
 
-    // Handler for form data changes
+    // Handler สำหรับการเปลี่ยนแปลงข้อมูลฟอร์ม
     const handleDataChange = (newData: Partial<IkigaiData>) => {
         setIkigaiData(prev => ({ ...prev, ...newData }));
     };
 
-    // Function to get advice from the AI coach
+    // ฟังก์ชันสำหรับรับคำแนะนำจาก AI coach
     const getAdvice = async () => {
+        // ตรวจสอบว่าผู้ใช้กรอกข้อมูลครบหรือไม่
+        const hasEmptyFields = Object.values(ikigaiData).some(value => value.trim() === '');
+        if (hasEmptyFields) {
+            alert('กรุณากรอกข้อมูลให้ครบทุกช่องก่อนขอคำแนะนำ');
+            return;
+        }
+
         setIsModalOpen(true);
         setIsLoading(true);
         setApiResponse('');
@@ -100,17 +107,24 @@ const IkigaiPage: NextPage = () => {
     };
 
     return (
-        <main className={`${kanit.className} bg-background text-foreground flex flex-col items-center min-h-screen p-4 sm:p-6 md:p-8`}>
-            <div className="w-full max-w-5xl mx-auto">
-                <header className="text-center mb-8 md:mb-12">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2">ปรัชญาชีวิตของญี่ปุ่น "IKIGAI"</h1>
-                    <h2 className="text-xl md:text-2xl text-center text-gray-600 dark:text-gray-400">"เหตุผลของการมีชีวิตอยู่"</h2>
+        <main className={`${kanit.className} bg-background text-foreground min-h-screen`}>
+            <div className="container mx-auto px-4 py-8 max-w-6xl">
+                <header className="text-center mb-12">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-primary">
+                        ปรัชญาชีวิตของญี่ปุ่น "IKIGAI"
+                    </h1>
+                    <h2 className="text-xl md:text-2xl text-foreground/70">
+                        "เหตุผลของการมีชีวิตอยู่"
+                    </h2>
                 </header>
 
                 <IkigaiDiagram data={ikigaiData} />
                 
-                <div className="text-center my-8 md:my-12">
-                    <button onClick={getAdvice} className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-lg">
+                <div className="text-center my-12">
+                    <button 
+                        onClick={getAdvice} 
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-lg flex items-center gap-2 mx-auto"
+                    >
                         ✨ รับคำแนะนำเพื่อค้นหา Ikigai
                     </button>
                 </div>
@@ -120,20 +134,32 @@ const IkigaiPage: NextPage = () => {
 
             {/* Result Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setIsModalOpen(false)}>
-                    <div className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                            <h3 className="text-2xl font-bold">คำแนะนำจาก AI Coach</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white text-3xl leading-none">&times;</button>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setIsModalOpen(false)}>
+                    <div className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-foreground/20" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-6 border-b border-foreground/20 flex justify-between items-center">
+                            <h3 className="text-2xl font-bold text-foreground">คำแนะนำจาก AI Coach</h3>
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="text-foreground/60 hover:text-foreground text-3xl leading-none transition-colors"
+                            >
+                                &times;
+                            </button>
                         </div>
                         <div className="p-6 overflow-y-auto">
                             {isLoading && (
                                 <div className="flex justify-center items-center py-10">
-                                    <div className="loader border-4 border-solid border-gray-200 dark:border-gray-600 border-t-blue-500 rounded-full w-12 h-12 animate-spin"></div>
+                                    <div className="border-4 border-foreground/20 border-t-primary rounded-full w-12 h-12 animate-spin"></div>
                                 </div>
                             )}
-                            {apiError && <p className="text-red-500 dark:text-red-400">{apiError}</p>}
-                            {apiResponse && <div className="prose dark:prose-invert max-w-none leading-relaxed" dangerouslySetInnerHTML={{ __html: renderMarkdown(apiResponse) }} />}
+                            {apiError && (
+                                <p className="text-red-500 dark:text-red-400">{apiError}</p>
+                            )}
+                            {apiResponse && (
+                                <div 
+                                    className="prose prose-lg max-w-none leading-relaxed text-foreground [&_strong]:text-primary [&_li]:text-foreground/90" 
+                                    dangerouslySetInnerHTML={{ __html: renderMarkdown(apiResponse) }} 
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

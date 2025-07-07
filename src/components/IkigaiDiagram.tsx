@@ -1,142 +1,268 @@
 'use client';
 
-import React, { useRef } from 'react';
-import type { IkigaiData } from './IkigaiForm';
-import html2canvas from 'html2canvas';
+import { useRef } from 'react';
+import { toPng } from 'html-to-image';
 import { Download, Share2 } from 'lucide-react';
+import type { IkigaiData } from './IkigaiForm';
 
-interface Props {
+// กำหนด Type สำหรับ Props
+interface IkigaiDiagramProps {
   data: IkigaiData;
 }
 
-// A reusable component for the main circles
-const Circle = ({ title, content, position, color }: { title: string, content: string, position: string, color: string }) => (
-    <div className={`absolute ${position} w-[56%] h-[56%] rounded-full ${color} flex items-center justify-center text-center text-white mix-blend-multiply dark:mix-blend-lighten filter brightness-110 dark:brightness-100 opacity-80 dark:opacity-70`}>
-        <div className="p-4">
-            <h3 className="font-bold text-sm sm:text-base md:text-lg">{title}</h3>
-            <p className="text-xs sm:text-sm md:text-base leading-tight break-words">{content}</p>
+const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
+  const diagramRef = useRef<HTMLDivElement>(null);
+
+  // ฟังก์ชันสำหรับบันทึกแผนภาพเป็นรูปภาพ
+  const handleSaveImage = async () => {
+    if (!diagramRef.current) return;
+    try {
+      const dataUrl = await toPng(diagramRef.current, {
+        cacheBust: true,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff',
+        pixelRatio: 2,
+        width: 800,
+        height: 800,
+      });
+      const link = document.createElement('a');
+      link.download = 'ikigai-diagram.png';
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('ไม่สามารถสร้างรูปภาพได้:', err);
+    }
+  };
+
+  // ฟังก์ชันสำหรับแชร์แผนภาพ (ใช้ Web Share API)
+  const handleShare = async () => {
+    if (!diagramRef.current) return;
+    try {
+      const dataUrl = await toPng(diagramRef.current, {
+        cacheBust: true,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff',
+        pixelRatio: 2,
+        width: 800,
+        height: 800,
+      });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], 'ikigai-diagram.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'My Ikigai Diagram',
+          text: 'นี่คือแผนภาพอิคิไกของฉัน ลองสร้างของคุณเองได้เลย!',
+          files: [file],
+        });
+      } else {
+        // Fallback สำหรับเบราว์เซอร์ที่ไม่รองรับ Web Share API
+        const link = document.createElement('a');
+        link.download = 'ikigai-diagram.png';
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.error('เกิดข้อผิดพลาดในการแชร์:', err);
+      alert('ไม่สามารถแชร์รูปภาพได้ในขณะนี้');
+    }
+  };
+
+  // ฟังก์ชันสำหรับตัดข้อความให้พอดีกับพื้นที่
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  };
+
+  return (
+    <section className="w-full flex flex-col items-center">
+      {/* ส่วนของแผนภาพ */}
+      <div className="relative w-full max-w-4xl mx-auto mb-8">
+        <div 
+          ref={diagramRef} 
+          className="relative w-full aspect-square bg-background p-8 rounded-2xl shadow-lg border border-foreground/10"
+          style={{ maxWidth: '800px', margin: '0 auto' }}
+        >
+          {/* SVG Container สำหรับแผนภาพ Ikigai */}
+          <svg 
+            viewBox="0 0 800 800" 
+            className="w-full h-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Background */}
+            <rect width="800" height="800" fill="var(--background)" />
+            
+            {/* วงกลมที่ 1: สิ่งที่รัก (บน) */}
+            <circle 
+              cx="400" 
+              cy="250" 
+              r="180" 
+              fill="rgba(59, 130, 246, 0.3)" 
+              stroke="rgba(59, 130, 246, 0.6)" 
+              strokeWidth="2"
+            />
+            
+            {/* วงกลมที่ 2: สิ่งที่ถนัด (ขวา) */}
+            <circle 
+              cx="550" 
+              cy="400" 
+              r="180" 
+              fill="rgba(34, 197, 94, 0.3)" 
+              stroke="rgba(34, 197, 94, 0.6)" 
+              strokeWidth="2"
+            />
+            
+            {/* วงกลมที่ 3: สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
+            <circle 
+              cx="400" 
+              cy="550" 
+              r="180" 
+              fill="rgba(239, 68, 68, 0.3)" 
+              stroke="rgba(239, 68, 68, 0.6)" 
+              strokeWidth="2"
+            />
+            
+            {/* วงกลมที่ 4: สิ่งที่โลกต้องการ (ซ้าย) */}
+            <circle 
+              cx="250" 
+              cy="400" 
+              r="180" 
+              fill="rgba(245, 158, 11, 0.3)" 
+              stroke="rgba(245, 158, 11, 0.6)" 
+              strokeWidth="2"
+            />
+
+            {/* ข้อความในวงกลมหลัก */}
+            {/* สิ่งที่รัก */}
+            <text x="400" y="190" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+              สิ่งที่รัก
+            </text>
+            <foreignObject x="320" y="200" width="160" height="80">
+              <div className="text-center text-sm text-foreground/80 leading-tight p-2">
+                {data.love || 'กรุณากรอกข้อมูล'}
+              </div>
+            </foreignObject>
+
+            {/* สิ่งที่ถนัด */}
+            <text x="620" y="350" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+              สิ่งที่ถนัด
+            </text>
+            <foreignObject x="540" y="360" width="160" height="80">
+              <div className="text-center text-sm text-foreground/80 leading-tight p-2">
+                {data.goodAt || 'กรุณากรอกข้อมูล'}
+              </div>
+            </foreignObject>
+
+            {/* สิ่งที่ทำแล้วมีรายได้ */}
+            <text x="400" y="620" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+              สิ่งที่ทำแล้วมีรายได้
+            </text>
+            <foreignObject x="320" y="530" width="160" height="80">
+              <div className="text-center text-sm text-foreground/80 leading-tight p-2">
+                {data.paidFor || 'กรุณากรอกข้อมูล'}
+              </div>
+            </foreignObject>
+
+            {/* สิ่งที่โลกต้องการ */}
+            <text x="180" y="350" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+              สิ่งที่โลกต้องการ
+            </text>
+            <foreignObject x="100" y="360" width="160" height="80">
+              <div className="text-center text-sm text-foreground/80 leading-tight p-2">
+                {data.worldNeeds || 'กรุณากรอกข้อมูล'}
+              </div>
+            </foreignObject>
+
+            {/* ข้อความในส่วนที่ทับซ้อน */}
+            {/* Passion (รัก + ถนัด) */}
+            <text x="475" y="310" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+              Passion
+            </text>
+            <foreignObject x="410" y="315" width="130" height="60">
+              <div className="text-center text-xs text-foreground/70 leading-tight">
+                {data.passion || 'รัก + ถนัด'}
+              </div>
+            </foreignObject>
+
+            {/* Profession (ถนัด + รายได้) */}
+            <text x="475" y="480" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+              Profession
+            </text>
+            <foreignObject x="410" y="485" width="130" height="60">
+              <div className="text-center text-xs text-foreground/70 leading-tight">
+                {data.profession || 'ถนัด + รายได้'}
+              </div>
+            </foreignObject>
+
+            {/* Vocation (รายได้ + โลกต้องการ) */}
+            <text x="325" y="480" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+              Vocation
+            </text>
+            <foreignObject x="260" y="485" width="130" height="60">
+              <div className="text-center text-xs text-foreground/70 leading-tight">
+                {data.vocation || 'รายได้ + โลกต้องการ'}
+              </div>
+            </foreignObject>
+
+            {/* Mission (โลกต้องการ + รัก) */}
+            <text x="325" y="310" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+              Mission
+            </text>
+            <foreignObject x="260" y="315" width="130" height="60">
+              <div className="text-center text-xs text-foreground/70 leading-tight">
+                {data.mission || 'โลกต้องการ + รัก'}
+              </div>
+            </foreignObject>
+
+            {/* จุดศูนย์กลาง - Ikigai */}
+            <circle cx="400" cy="400" r="80" fill="var(--primary)" opacity="0.9" />
+            <text x="400" y="390" textAnchor="middle" className="fill-current text-primary-foreground font-bold text-2xl">
+              IKIGAI
+            </text>
+            <text x="400" y="410" textAnchor="middle" className="fill-current text-primary-foreground text-sm">
+              อิคิไก
+            </text>
+
+            {/* เส้นโค้งและลูกศร */}
+            {/* ลูกศรจาก Passion */}
+            <path d="M 475 280 Q 520 260 560 240" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
+            
+            {/* ลูกศรจาก Profession */}
+            <path d="M 520 480 Q 560 500 600 520" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
+            
+            {/* ลูกศรจาก Vocation */}
+            <path d="M 280 520 Q 240 540 200 560" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
+            
+            {/* ลูกศรจาก Mission */}
+            <path d="M 280 280 Q 240 260 200 240" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
+
+            {/* Arrow marker definition */}
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
+              </marker>
+            </defs>
+          </svg>
         </div>
-    </div>
-);
+      </div>
 
-// A reusable component for the intersection labels
-const Intersection = ({ title, content, position, color }: { title: string, content: string, position: string, color: string }) => (
-    <div className={`absolute ${position} text-center`}>
-        <h4 className={`font-bold text-xs sm:text-sm md:text-base ${color}`}>{title}</h4>
-        <p className="text-2xs sm:text-xs md:text-sm leading-tight max-w-[10ch] sm:max-w-[15ch] break-words">{content}</p>
-    </div>
-);
-
-// A reusable component for the outer 'imbalance' labels
-const ImbalanceLabel = ({ content, position }: { content: string, position: string }) => (
-    <div className={`absolute ${position} text-center text-gray-500 dark:text-gray-400 text-2xs sm:text-xs md:text-sm leading-tight max-w-[15ch] sm:max-w-[20ch]`}>
-        {content}
-    </div>
-);
-
-
-const IkigaiDiagram: React.FC<Props> = ({ data }) => {
-    const diagramRef = useRef<HTMLDivElement>(null);
-
-    const handleExport = async (action: 'save' | 'share') => {
-        if (!diagramRef.current) return;
-    
-        const elementToCapture = diagramRef.current;
-        const originalBg = elementToCapture.style.backgroundColor;
-        
-        // Temporarily set a solid background for capture
-        const isDarkMode = document.documentElement.classList.contains('dark');
-        elementToCapture.style.backgroundColor = isDarkMode ? '#1f2937' : '#ffffff';
-
-        try {
-            const canvas = await html2canvas(elementToCapture, {
-                scale: 2.5,
-                useCORS: true,
-                backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-                onclone: (document) => {
-                    // This ensures mix-blend-mode works correctly on the cloned element for capture
-                    const clonedElement = document.querySelector('.diagram-capture-area');
-                    if(clonedElement) {
-                        (clonedElement as HTMLElement).style.backgroundColor = isDarkMode ? '#1f2937' : '#ffffff';
-                    }
-                }
-            });
-    
-            elementToCapture.style.backgroundColor = originalBg;
-    
-            if (action === 'save') {
-                const link = document.createElement('a');
-                link.download = 'ikigai-diagram.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } else if (action === 'share' && navigator.share) {
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
-                    try {
-                        await navigator.share({
-                            title: 'My Ikigai',
-                            text: 'Here is my Ikigai diagram, created with the Ikigai AI Coach.',
-                            files: [new File([blob], 'ikigai-diagram.png', { type: 'image/png' })],
-                        });
-                    } catch (error) {
-                        console.error('Sharing failed', error);
-                        alert('Could not share the image.');
-                    }
-                }, 'image/png');
-            } else if (action === 'share') {
-                alert("Sharing is not supported on this browser. Please save the image and share it manually.");
-            }
-        } catch (error) {
-            console.error('Failed to capture diagram:', error);
-            elementToCapture.style.backgroundColor = originalBg;
-        }
-    };
-
-    return (
-        <div className="w-full max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto flex flex-col items-center">
-             <div ref={diagramRef} className="diagram-capture-area w-full p-4 sm:p-6 md:p-8 bg-background transition-colors duration-300">
-                <div className="relative aspect-square">
-                    {/* Imbalance Labels */}
-                    <ImbalanceLabel content="พอใจในชีวิต แต่รู้สึกว่าชีวิตไร้ความหมาย" position="top-[2%] left-[-10%] sm:left-[-5%] -translate-x-1/2" />
-                    <ImbalanceLabel content="เต็มไปด้วยความสุข แต่ไม่มีความมั่นคงทางการเงิน" position="top-[2%] right-[-10%] sm:right-[-5%] translate-x-1/2" />
-                    <ImbalanceLabel content="มีชีวิตที่สะดวกสบาย แต่รู้สึกว่างเปล่า" position="bottom-[2%] left-[-10%] sm:left-[-5%] -translate-x-1/2" />
-                    <ImbalanceLabel content="มีความตื่นเต้นในการใช้ชีวิต แต่รู้สึกถึงความไม่แน่นอน" position="bottom-[2%] right-[-10%] sm:right-[-5%] translate-x-1/2" />
-
-                    {/* Main Circles */}
-                    <Circle title="สิ่งที่รัก" content={data.love} position="top-0 left-1/2 -translate-x-1/2" color="bg-cyan-500" />
-                    <Circle title="สิ่งที่โลกต้องการ" content={data.worldNeeds} position="top-1/2 right-0 -translate-y-1/2" color="bg-blue-500" />
-                    <Circle title="สิ่งที่ทำแล้วมีรายได้" content={data.paidFor} position="bottom-0 left-1/2 -translate-x-1/2" color="bg-indigo-500" />
-                    <Circle title="สิ่งที่ถนัด" content={data.goodAt} position="top-1/2 left-0 -translate-y-1/2" color="bg-sky-500" />
-
-                    {/* Intersections */}
-                    <Intersection title="Mission" content={data.mission} position="top-[25%] right-[25%] translate-x-1/2 -translate-y-1/2" color="text-blue-800 dark:text-blue-300" />
-                    <Intersection title="Passion" content={data.passion} position="top-[25%] left-[25%] -translate-x-1/2 -translate-y-1/2" color="text-sky-800 dark:text-sky-300" />
-                    <Intersection title="Profession" content={data.profession} position="bottom-[25%] left-[25%] -translate-x-1/2 translate-y-1/2" color="text-indigo-800 dark:text-indigo-300" />
-                    <Intersection title="Vocation" content={data.vocation} position="bottom-[25%] right-[25%] translate-x-1/2 translate-y-1/2" color="text-purple-800 dark:text-purple-300" />
-                    
-                    {/* Center Ikigai */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30%] h-[30%] bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-lg">
-                        <div className="text-center">
-                            <h3 className="text-lg sm:text-2xl md:text-4xl font-bold text-indigo-600 dark:text-indigo-400">
-                                Ikigai
-                            </h3>
-                            <p className="text-2xs sm:text-xs md:text-sm text-gray-600 dark:text-gray-300">คุณค่าในการมีชีวิต</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="flex items-center gap-4 mt-4">
-                 <button onClick={() => handleExport('save')} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    <Download size={20} />
-                    <span>Save as PNG</span>
-                </button>
-                <button onClick={() => handleExport('share')} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    <Share2 size={20} />
-                    <span>Share</span>
-                </button>
-            </div>
-        </div>
-    );
+      {/* ปุ่มควบคุม */}
+      <div className="flex items-center gap-4 mt-4">
+        <button
+          onClick={handleSaveImage}
+          className="bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg"
+        >
+          <Download size={18} />
+          บันทึกเป็นรูปภาพ
+        </button>
+        <button
+          onClick={handleShare}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg"
+        >
+          <Share2 size={18} />
+          แชร์
+        </button>
+      </div>
+    </section>
+  );
 };
 
 export default IkigaiDiagram;

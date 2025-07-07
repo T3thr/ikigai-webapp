@@ -8,13 +8,13 @@ export function ThemeToggle() {
 
     return (
         <button
-            className="bg-background border rounded-md p-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="bg-container text-foreground hover:bg-secondary/80 flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label="Toggle theme"
+            aria-label="สลับธีม"
         >
-            <Sun className="h-6 w-6 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
+            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">สลับธีม</span>
         </button>
     );
 } 
