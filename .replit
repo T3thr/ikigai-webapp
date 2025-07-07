@@ -4,8 +4,8 @@ modules = ["nodejs-20", "web"]
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "npm start"]
-build = ["sh", "-c", "npm run build"]
+run = ["sh", "-c", "bun start"]
+build = ["sh", "-c", "bun run build"]
 
 [workflows]
 runButton = "Run"
@@ -17,7 +17,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "bun run dev"
 
 [[ports]]
 localPort = 3000
