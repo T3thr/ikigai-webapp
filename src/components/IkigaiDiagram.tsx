@@ -17,12 +17,21 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
   const handleSaveImage = async () => {
     if (!diagramRef.current) return;
     try {
+      // ใช้เฉพาะขนาดของ div ที่ล้อม SVG
+      const width = diagramRef.current.offsetWidth;
+      const height = diagramRef.current.offsetHeight;
+      
       const dataUrl = await toPng(diagramRef.current, {
         cacheBust: true,
         backgroundColor: document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff',
         pixelRatio: 2,
-        width: 800,
-        height: 800,
+        width,
+        height,
+        style: {
+          transform: 'none',
+          width: width + 'px',
+          height: height + 'px',
+        },
       });
       const link = document.createElement('a');
       link.download = 'ikigai-diagram.png';
@@ -37,12 +46,21 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
   const handleShare = async () => {
     if (!diagramRef.current) return;
     try {
+      // ใช้เฉพาะขนาดของ div ที่ล้อม SVG
+      const width = diagramRef.current.offsetWidth;
+      const height = diagramRef.current.offsetHeight;
+      
       const dataUrl = await toPng(diagramRef.current, {
         cacheBust: true,
         backgroundColor: document.documentElement.classList.contains('dark') ? '#0a0a0a' : '#ffffff',
         pixelRatio: 2,
-        width: 800,
-        height: 800,
+        width,
+        height,
+        style: {
+          transform: 'none',
+          width: width + 'px',
+          height: height + 'px',
+        },
       });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], 'ikigai-diagram.png', { type: 'image/png' });
@@ -75,11 +93,16 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
   return (
     <section className="w-full flex flex-col items-center">
       {/* ส่วนของแผนภาพ */}
-      <div className="relative w-full max-w-4xl mx-auto mb-8">
+      <div className="flex justify-center items-center w-full mb-8">
         <div 
           ref={diagramRef} 
-          className="relative w-full aspect-square bg-background p-8 rounded-2xl shadow-lg border border-foreground/10"
-          style={{ maxWidth: '800px', margin: '0 auto' }}
+          className="relative bg-background p-4 sm:p-8 rounded-2xl shadow-lg border border-foreground/10 flex items-center justify-center"
+          style={{ 
+            width: 'min(800px, 90vw)', 
+            height: 'min(800px, 90vw)',
+            maxWidth: '800px',
+            maxHeight: '800px'
+          }}
         >
           {/* SVG Container สำหรับแผนภาพ Ikigai */}
           <svg 

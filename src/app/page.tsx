@@ -125,7 +125,7 @@ const IkigaiPage: NextPage = () => {
                         onClick={getAdvice} 
                         className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-lg flex items-center gap-2 mx-auto"
                     >
-                        ✨ รับคำแนะนำเพื่อค้นหา Ikigai
+                        ✨ รับคำแนะนำจากโค้ช AI สำหรับ Ikigai ของคุณ
                     </button>
                 </div>
                 
