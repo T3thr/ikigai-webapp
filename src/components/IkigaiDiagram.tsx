@@ -8,16 +8,16 @@ import type { IkigaiData } from './IkigaiForm';
 // กำหนด Type สำหรับ Props
 interface IkigaiDiagramProps {
   data: IkigaiData;
+  colors?: { love: string; goodAt: string; paidFor: string; worldNeeds: string; };
 }
 
-const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
+const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
   const diagramRef = useRef<HTMLDivElement>(null);
 
   // ฟังก์ชันสำหรับบันทึกแผนภาพเป็นรูปภาพ
   const handleSaveImage = async () => {
     if (!diagramRef.current) return;
     try {
-      // ใช้เฉพาะขนาดของ div ที่ล้อม SVG
       const width = diagramRef.current.offsetWidth;
       const height = diagramRef.current.offsetHeight;
       
@@ -42,11 +42,10 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
     }
   };
 
-  // ฟังก์ชันสำหรับแชร์แผนภาพ (ใช้ Web Share API)
+  // ฟังก์ชันสำหรับแชร์แผนภาพ
   const handleShare = async () => {
     if (!diagramRef.current) return;
     try {
-      // ใช้เฉพาะขนาดของ div ที่ล้อม SVG
       const width = diagramRef.current.offsetWidth;
       const height = diagramRef.current.offsetHeight;
       
@@ -72,7 +71,6 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
           files: [file],
         });
       } else {
-        // Fallback สำหรับเบราว์เซอร์ที่ไม่รองรับ Web Share API
         const link = document.createElement('a');
         link.download = 'ikigai-diagram.png';
         link.href = dataUrl;
@@ -84,12 +82,6 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
     }
   };
 
-  // ฟังก์ชันสำหรับตัดข้อความให้พอดีกับพื้นที่
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength - 3) + '...';
-  };
-
   return (
     <section className="w-full flex flex-col items-center">
       {/* ส่วนของแผนภาพ */}
@@ -98,171 +90,217 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data }) => {
           ref={diagramRef} 
           className="relative bg-background p-4 sm:p-8 rounded-2xl shadow-lg border border-foreground/10 flex items-center justify-center"
           style={{ 
-            width: 'min(800px, 90vw)', 
-            height: 'min(800px, 90vw)',
-            maxWidth: '800px',
-            maxHeight: '800px'
+            width: 'min(900px, 95vw)', 
+            height: 'min(900px, 95vw)',
+            maxWidth: '900px',
+            maxHeight: '900px'
           }}
         >
           {/* SVG Container สำหรับแผนภาพ Ikigai */}
           <svg 
-            viewBox="0 0 800 800" 
+            viewBox="0 0 900 900" 
             className="w-full h-full"
             xmlns="http://www.w3.org/2000/svg"
           >
             {/* Background */}
-            <rect width="800" height="800" fill="var(--background)" />
+            <rect width="900" height="900" fill="var(--background)" />
             
             {/* วงกลมที่ 1: สิ่งที่รัก (บน) */}
             <circle 
-              cx="400" 
-              cy="250" 
-              r="180" 
-              fill="rgba(59, 130, 246, 0.3)" 
-              stroke="rgba(59, 130, 246, 0.6)" 
+              cx="450" 
+              cy="280" 
+              r="170" 
+              fill={colors?.love || 'var(--primary)'}
+              fillOpacity="0.2"
+              stroke={colors?.love || 'var(--primary)'}
               strokeWidth="2"
             />
             
-            {/* วงกลมที่ 2: สิ่งที่ถนัด (ขวา) */}
+            {/* วงกลมที่ 2: สิ่งที่ถนัด (ซ้าย) */}
             <circle 
-              cx="550" 
-              cy="400" 
-              r="180" 
-              fill="rgba(34, 197, 94, 0.3)" 
-              stroke="rgba(34, 197, 94, 0.6)" 
+              cx="280" 
+              cy="450" 
+              r="170" 
+              fill={colors?.goodAt || 'var(--secondary)'}
+              fillOpacity="0.2"
+              stroke={colors?.goodAt || 'var(--secondary)'}
               strokeWidth="2"
             />
             
             {/* วงกลมที่ 3: สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
             <circle 
-              cx="400" 
-              cy="550" 
-              r="180" 
-              fill="rgba(239, 68, 68, 0.3)" 
-              stroke="rgba(239, 68, 68, 0.6)" 
+              cx="450" 
+              cy="620" 
+              r="170" 
+              fill={colors?.paidFor || 'var(--primary)'}
+              fillOpacity="0.15"
+              stroke={colors?.paidFor || 'var(--primary)'}
               strokeWidth="2"
             />
             
-            {/* วงกลมที่ 4: สิ่งที่โลกต้องการ (ซ้าย) */}
+            {/* วงกลมที่ 4: สิ่งที่โลกต้องการ (ขวา) */}
             <circle 
-              cx="250" 
-              cy="400" 
-              r="180" 
-              fill="rgba(245, 158, 11, 0.3)" 
-              stroke="rgba(245, 158, 11, 0.6)" 
+              cx="620" 
+              cy="450" 
+              r="170" 
+              fill={colors?.worldNeeds || 'var(--secondary)'}
+              fillOpacity="0.15"
+              stroke={colors?.worldNeeds || 'var(--secondary)'}
               strokeWidth="2"
             />
 
             {/* ข้อความในวงกลมหลัก */}
-            {/* สิ่งที่รัก */}
-            <text x="400" y="190" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            {/* สิ่งที่รัก (บน) */}
+            <text x="450" y="210" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่รัก
             </text>
-            <foreignObject x="320" y="200" width="160" height="80">
+            <foreignObject x="370" y="220" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.love || 'กรุณากรอกข้อมูล'}
               </div>
             </foreignObject>
 
-            {/* สิ่งที่ถนัด */}
-            <text x="620" y="350" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            {/* สิ่งที่ถนัด (ซ้าย) */}
+            <text x="210" y="400" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่ถนัด
             </text>
-            <foreignObject x="540" y="360" width="160" height="80">
+            <foreignObject x="130" y="410" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.goodAt || 'กรุณากรอกข้อมูล'}
               </div>
             </foreignObject>
 
-            {/* สิ่งที่ทำแล้วมีรายได้ */}
-            <text x="400" y="620" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            {/* สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
+            <text x="450" y="690" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่ทำแล้วมีรายได้
             </text>
-            <foreignObject x="320" y="530" width="160" height="80">
+            <foreignObject x="370" y="700" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.paidFor || 'กรุณากรอกข้อมูล'}
               </div>
             </foreignObject>
 
-            {/* สิ่งที่โลกต้องการ */}
-            <text x="180" y="350" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            {/* สิ่งที่โลกต้องการ (ขวา) */}
+            <text x="690" y="400" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่โลกต้องการ
             </text>
-            <foreignObject x="100" y="360" width="160" height="80">
+            <foreignObject x="610" y="410" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.worldNeeds || 'กรุณากรอกข้อมูล'}
               </div>
             </foreignObject>
 
-            {/* ข้อความในส่วนที่ทับซ้อน */}
-            {/* Passion (รัก + ถนัด) */}
-            <text x="475" y="310" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            {/* ข้อความในส่วนที่ทับซ้อน (Secondary Intersections) */}
+            {/* Passion (รัก + ถนัด) - บนซ้าย */}
+            <text x="365" y="350" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Passion
             </text>
-            <foreignObject x="410" y="315" width="130" height="60">
+            <foreignObject x="300" y="355" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.passion || 'รัก + ถนัด'}
               </div>
             </foreignObject>
 
-            {/* Profession (ถนัด + รายได้) */}
-            <text x="475" y="480" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            {/* Mission (รัก + โลกต้องการ) - บนขวา */}
+            <text x="535" y="350" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+              Mission
+            </text>
+            <foreignObject x="470" y="355" width="130" height="60">
+              <div className="text-center text-xs text-foreground/70 leading-tight">
+                {data.mission || 'รัก + โลกต้องการ'}
+              </div>
+            </foreignObject>
+
+            {/* Profession (ถนัด + รายได้) - ล่างซ้าย */}
+            <text x="365" y="540" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Profession
             </text>
-            <foreignObject x="410" y="485" width="130" height="60">
+            <foreignObject x="300" y="545" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.profession || 'ถนัด + รายได้'}
               </div>
             </foreignObject>
 
-            {/* Vocation (รายได้ + โลกต้องการ) */}
-            <text x="325" y="480" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            {/* Vocation (รายได้ + โลกต้องการ) - ล่างขวา */}
+            <text x="535" y="540" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Vocation
             </text>
-            <foreignObject x="260" y="485" width="130" height="60">
+            <foreignObject x="470" y="545" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.vocation || 'รายได้ + โลกต้องการ'}
               </div>
             </foreignObject>
 
-            {/* Mission (โลกต้องการ + รัก) */}
-            <text x="325" y="310" textAnchor="middle" className="fill-current text-primary font-bold text-base">
-              Mission
-            </text>
-            <foreignObject x="260" y="315" width="130" height="60">
-              <div className="text-center text-xs text-foreground/70 leading-tight">
-                {data.mission || 'โลกต้องการ + รัก'}
+            {/* Tertiary Intersections - เส้นและป้ายชื่อภายนอก */}
+            
+            {/* 1. รัก + ถนัด + รายได้ (บนซ้าย) */}
+            <path 
+              d="M 450 460 Q 450 350 250 300" 
+              stroke="var(--foreground)" 
+              strokeWidth="1" 
+              fill="none" 
+              strokeDasharray="2,2"
+              transform="translate(-25, -50)"
+            />
+            <foreignObject x="120" y="220" width="160" height="40">
+              <div className="text-xs text-foreground/80 leading-tight">
+                พอใจในชีวิต แต่รู้สึกว่าชีวิตไร้ความหมาย
+              </div>
+            </foreignObject>
+
+            {/* 2. รัก + ถนัด + โลกต้องการ (บนขวา) */}
+            <path 
+              d="M 450 460 Q 450 350 650 300" 
+              stroke="var(--foreground)" 
+              strokeWidth="1" 
+              fill="none" 
+              strokeDasharray="2,2"
+              transform="translate(25, -50)"
+            />
+            <foreignObject x="630" y="220" width="160" height="40">
+              <div className="text-xs text-foreground/80 leading-tight">
+                เต็มไปด้วยความสุข หากแต่ไม่มีความมั่นคง
+              </div>
+            </foreignObject>
+
+            {/* 3. รัก + รายได้ + โลกต้องการ (ล่างขวา) */}
+            <path 
+              d="M 450 460 Q 450 550 650 600" 
+              stroke="var(--foreground)" 
+              strokeWidth="1" 
+              fill="none" 
+              strokeDasharray="2,2"
+              transform="translate(25, 50)"
+            />
+            <foreignObject x="640" y="660" width="160" height="40">
+              <div className="text-xs text-foreground/80 leading-tight">
+                มีความอิ่มเอม ตื่นเต้น หากแต่รู้สึกไม่แน่นอน
+              </div>
+            </foreignObject>
+
+            {/* 4. ถนัด + รายได้ + โลกต้องการ (ล่างซ้าย) */}
+            <path 
+              d="M 450 460 Q 450 550 250 600" 
+              stroke="var(--foreground)" 
+              strokeWidth="1" 
+              fill="none" 
+              strokeDasharray="2,2"
+              transform="translate(-25, 50)"
+            />
+            <foreignObject x="110" y="660" width="160" height="40">
+              <div className="text-xs text-foreground/80 leading-tight">
+                มีชีวิตที่สะดวกสบาย หากแต่รู้สึกว่างเปล่า
               </div>
             </foreignObject>
 
             {/* จุดศูนย์กลาง - Ikigai */}
-            <circle cx="400" cy="400" r="80" fill="var(--primary)" opacity="0.9" />
-            <text x="400" y="390" textAnchor="middle" className="fill-current text-primary-foreground font-bold text-2xl">
+            <circle cx="450" cy="450" r="70" fill="var(--primary)" opacity="0.9" />
+            <text x="450" y="440" textAnchor="middle" className="fill-current text-primary-foreground font-bold text-2xl">
               IKIGAI
             </text>
-            <text x="400" y="410" textAnchor="middle" className="fill-current text-primary-foreground text-sm">
+            <text x="450" y="460" textAnchor="middle" className="fill-current text-primary-foreground text-sm">
               อิคิไก
             </text>
-
-            {/* เส้นโค้งและลูกศร */}
-            {/* ลูกศรจาก Passion */}
-            <path d="M 475 280 Q 520 260 560 240" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
-            
-            {/* ลูกศรจาก Profession */}
-            <path d="M 520 480 Q 560 500 600 520" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
-            
-            {/* ลูกศรจาก Vocation */}
-            <path d="M 280 520 Q 240 540 200 560" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
-            
-            {/* ลูกศรจาก Mission */}
-            <path d="M 280 280 Q 240 260 200 240" stroke="var(--primary)" strokeWidth="2" fill="none" markerEnd="url(#arrowhead)" />
-
-            {/* Arrow marker definition */}
-            <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
-              </marker>
-            </defs>
           </svg>
         </div>
       </div>

@@ -1,40 +1,41 @@
-import { NextResponse } from 'next/server';
+// src/app/api/gemini/route.ts
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { NextRequest, NextResponse } from 'next/server';
+import { GenerationConfig } from '@google/generative-ai';
 
-export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { prompt } = body;
+export async function POST(req: NextRequest) {
+  const { prompt, isJsonMode } = await req.json();
 
-        const apiKey = process.env.GEMINI_API_KEY;
+  if (!prompt) {
+    return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+  }
 
-        if (!apiKey) {
-            return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
-        }
+  if (!process.env.GEMINI_API_KEY) {
+    return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 500 });
+  }
 
-        if (!prompt) {
-            return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
-        }
-        
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-        const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    
+    const generationConfig: GenerationConfig = isJsonMode 
+      ? { responseMimeType: "application/json" } // Adjust property names as per the actual type definition
+      : {};
 
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-1.5-flash-latest',
+      generationConfig,
+    });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error('API Error Response:', errorBody);
-            return NextResponse.json({ error: `API error: ${response.status}. ${errorBody}` }, { status: response.status });
-        }
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    
+    return NextResponse.json(response);
 
-        const result = await response.json();
-        return NextResponse.json(result);
-
-    } catch (error: any) {
-        console.error('Internal Server Error:', error);
-        return NextResponse.json({ error: `Internal server error: ${error.message}` }, { status: 500 });
-    }
+  } catch (error: any) {
+    console.error('Error calling Gemini API:', error);
+    return NextResponse.json(
+      { error: `Error calling Gemini API: ${error.message}` },
+      { status: 500 }
+    );
+  }
 } 

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { History } from 'lucide-react';
 
 // กำหนด Type สำหรับข้อมูล Ikigai
 export interface IkigaiData {
@@ -18,9 +19,28 @@ export interface IkigaiData {
 interface IkigaiFormProps {
   data: IkigaiData;
   onDataChange: (newData: Partial<IkigaiData>) => void;
+  onGenerateIntersections: () => void;
+  isGenerating: boolean;
+  getAdvice: () => void;
+  children: React.ReactNode;
+  colors?: { love: string; goodAt: string; paidFor: string; worldNeeds: string; };
+  onColorChange?: (key: string, value: string) => void;
+  savedAdvice?: string;
+  onViewHistory?: () => void;
 }
 
-const IkigaiForm: React.FC<IkigaiFormProps> = ({ data, onDataChange }) => {
+const IkigaiForm: React.FC<IkigaiFormProps> = ({ 
+  data, 
+  onDataChange, 
+  onGenerateIntersections,
+  isGenerating,
+  getAdvice,
+  children,
+  colors,
+  onColorChange,
+  savedAdvice,
+  onViewHistory
+}) => {
   
   // Handler สำหรับการเปลี่ยนแปลงข้อมูลในฟอร์ม
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -31,9 +51,20 @@ const IkigaiForm: React.FC<IkigaiFormProps> = ({ data, onDataChange }) => {
   // ฟังก์ชันสำหรับสร้าง Textarea แต่ละช่อง
   const renderTextarea = (name: keyof IkigaiData, label: string, placeholder: string, colorClass: string) => (
     <div className="flex flex-col space-y-2">
-      <label htmlFor={name} className={`font-semibold text-sm ${colorClass}`}>
-        {label}
-      </label>
+      <div className="flex items-center">
+        <label htmlFor={name} className={`font-semibold text-sm ${colorClass}`}>
+          {label}
+        </label>
+        {['love', 'goodAt', 'worldNeeds', 'paidFor'].includes(name) && colors && onColorChange && (
+          <input
+            type="color"
+            value={colors[name as keyof typeof colors]}
+            onChange={(e) => onColorChange(name, e.target.value)}
+            className="ml-2 w-6 h-6 border-none cursor-pointer"
+            aria-label={`เลือกสีสำหรับ ${label}`}
+          />
+        )}
+      </div>
       <textarea
         id={name}
         name={name}
@@ -81,6 +112,26 @@ const IkigaiForm: React.FC<IkigaiFormProps> = ({ data, onDataChange }) => {
         )}
       </div>
       
+      {children}
+
+      <div className="text-center my-8 flex justify-center items-center gap-4">
+        <button
+          onClick={getAdvice}
+          className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-lg flex items-center gap-2"
+        >
+          ✨ รับคำแนะนำจากโค้ช AI สำหรับ Ikigai ของคุณ
+        </button>
+        {savedAdvice && onViewHistory && (
+          <button
+            onClick={onViewHistory}
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80 p-4 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105"
+            aria-label="ดูประวัติคำแนะนำ"
+          >
+            <History size={24} />
+          </button>
+        )}
+      </div>
+
       {/* เส้นแบ่ง */}
       <div className="border-t border-neutral-200 dark:border-neutral-700 my-8"></div>
       
@@ -88,6 +139,23 @@ const IkigaiForm: React.FC<IkigaiFormProps> = ({ data, onDataChange }) => {
       <div className="text-center mb-6">
         <h4 className="text-xl md:text-2xl font-bold text-primary mb-2">จุดเชื่อมต่อ (Intersections)</h4>
         <p className="text-foreground/70 text-sm md:text-base">ส่วนที่เกิดจากการผสมผสานระหว่างองค์ประกอบต่างๆ</p>
+      </div>
+
+      <div className="text-center mb-8">
+        <button
+          onClick={onGenerateIntersections}
+          disabled={isGenerating}
+          className="bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold py-3 px-6 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-base flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isGenerating ? (
+            <>
+              <div className="border-2 border-white/20 border-t-white rounded-full w-5 h-5 animate-spin"></div>
+              <span>กำลังประมวลผล...</span>
+            </>
+          ) : (
+            'ให้ AI ช่วยหาตัวตนของคุณ'
+          )}
+        </button>
       </div>
 
       {/* ส่วนที่ทับซ้อนกัน */}

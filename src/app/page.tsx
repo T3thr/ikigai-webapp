@@ -1,11 +1,12 @@
 // app/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Kanit } from 'next/font/google';
 import type { NextPage } from 'next';
 import IkigaiDiagram from '@/components/IkigaiDiagram';
 import IkigaiForm, { IkigaiData } from '@/components/IkigaiForm';
+import { Save, Copy, History, Trash2, X } from 'lucide-react';
 
 // Font setup
 const kanit = Kanit({
@@ -26,17 +27,116 @@ const initialIkigaiData: IkigaiData = {
 };
 
 const IkigaiPage: NextPage = () => {
-    // State สำหรับ modal, loading, และ API response
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalMode, setModalMode] = useState<'new' | 'history' | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [apiResponse, setApiResponse] = useState('');
     const [apiError, setApiError] = useState('');
     const [ikigaiData, setIkigaiData] = useState(initialIkigaiData);
+    const [savedAdvice, setSavedAdvice] = useState('');
+    const [isAdviceSaved, setIsAdviceSaved] = useState(false);
+
+    const [colors, setColors] = useState({
+        love: '#3b82f6',
+        goodAt: '#6b7280',
+        paidFor: '#3b82f6',
+        worldNeeds: '#6b7280'
+    });
+
+    useEffect(() => {
+        const stored = localStorage.getItem('ikigaiColors');
+        if (stored) {
+            setColors(JSON.parse(stored));
+        }
+    }, []);
+
+    useEffect(() => {
+        const storedAdvice = localStorage.getItem('ikigaiAdvice');
+        if (storedAdvice) {
+            setSavedAdvice(storedAdvice);
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('ikigaiColors', JSON.stringify(colors));
+    }, [colors]);
+
+    const handleColorChange = (key: string, value: string) => {
+        setColors(prev => ({ ...prev, [key]: value }));
+    };
 
     // Handler สำหรับการเปลี่ยนแปลงข้อมูลฟอร์ม
     const handleDataChange = (newData: Partial<IkigaiData>) => {
         setIkigaiData(prev => ({ ...prev, ...newData }));
     };
+    
+    // ฟังก์ชันสำหรับสร้าง Intersection จาก AI
+    const generateIntersections = async () => {
+      const { love, goodAt, paidFor, worldNeeds } = ikigaiData;
+      if (!love || !goodAt || !paidFor || !worldNeeds) {
+        alert('กรุณากรอกข้อมูลหลัก 4 อย่างให้ครบถ้วนก่อน');
+        return;
+      }
+
+      setIsGenerating(true);
+      setApiError('');
+
+      const prompt = `
+You are an Ikigai expert. Based on the user's inputs, generate concise, meaningful, and beautifully phrased suggestions for the four Ikigai intersections. Follow these principles strictly:
+
+1. Passion: Combination of What you love + What you are good at. This is "the things that ignite your daily passion" – what drives you to wake up excited every day. It emerges from loving what you do and being skilled at it. Often, lack of passion comes from missing one of these.
+
+2. Mission: Combination of What you love + What the world needs. This is your "mission" or purpose – why certain businesses or careers persist even if not highly profitable; it's what you love and what the world truly needs, creating value for others.
+
+3. Profession: Combination of What you are good at + What you can be paid for. This is your "profession" – skills that generate income. Even if not your utmost passion, connecting all elements can turn loves into paid work.
+
+4. Vocation: Combination of What the world needs + What you can be paid for. This is your "vocation" – market-demanded skills that provide income, encouraging skill development to meet world needs.
+
+User inputs:
+- What you love: ${love}
+- What you are good at: ${goodAt}
+- What you can be paid for: ${paidFor}
+- What the world needs: ${worldNeeds}
+
+Respond ONLY with a valid JSON object containing keys: passion, mission, profession, vocation. Each value should be a beautifully phrased, concise paragraph in Thai language, incorporating the principles above and user's inputs meaningfully.
+      `;
+
+      try {
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt, isJsonMode: true }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json();
+            throw new Error(errorBody.error || `API error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        let text = result.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+        
+        // Clean the response to ensure it's valid JSON
+        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        const generatedData = JSON.parse(text);
+
+        handleDataChange({
+          passion: generatedData.passion || '',
+          mission: generatedData.mission || '',
+          profession: generatedData.profession || '',
+          vocation: generatedData.vocation || '',
+        });
+
+      } catch (error: any) {
+          console.error('Error generating intersections:', error);
+          setApiError(`เกิดข้อผิดพลาดในการสร้างข้อมูล: ${error.message}`);
+          alert(`เกิดข้อผิดพลาด: ${error.message}`);
+      } finally {
+        setIsGenerating(false);
+      }
+    };
+
 
     // ฟังก์ชันสำหรับรับคำแนะนำจาก AI coach
     const getAdvice = async () => {
@@ -47,7 +147,8 @@ const IkigaiPage: NextPage = () => {
             return;
         }
 
-        setIsModalOpen(true);
+        setModalMode('new');
+        setIsAdviceSaved(false);
         setIsLoading(true);
         setApiResponse('');
         setApiError('');
@@ -94,6 +195,49 @@ const IkigaiPage: NextPage = () => {
             setIsLoading(false);
         }
     };
+
+    const handleSaveAdvice = () => {
+        if (savedAdvice && !window.confirm('มีคำแนะนำที่บันทึกไว้อยู่แล้ว คุณต้องการบันทึกทับหรือไม่?')) {
+            return;
+        }
+        localStorage.setItem('ikigaiAdvice', apiResponse);
+        setSavedAdvice(apiResponse);
+        setIsAdviceSaved(true);
+        alert('บันทึกคำแนะนำเรียบร้อยแล้ว!');
+    };
+
+    const handleCopyAdvice = () => {
+        navigator.clipboard.writeText(apiResponse);
+        alert('คัดลอกคำแนะนำแล้ว!');
+    };
+    
+    const handleDeleteAdvice = () => {
+        if (window.confirm('คุณต้องการลบคำแนะนำที่บันทึกไว้ใช่หรือไม่?')) {
+            localStorage.removeItem('ikigaiAdvice');
+            setSavedAdvice('');
+            setModalMode(null);
+        }
+    };
+
+    const handleViewHistory = () => {
+        if (savedAdvice) {
+            setApiResponse(savedAdvice);
+            setApiError('');
+            setIsLoading(false);
+            setModalMode('history');
+        }
+    };
+
+    const handleCloseModal = () => {
+        if (modalMode === 'new' && apiResponse && !isAdviceSaved) {
+            if (!window.confirm('คุณยังไม่ได้บันทึกคำแนะนำ การเปลี่ยนแปลงจะสูญหาย ยืนยันที่จะปิดหรือไม่?')) {
+                return;
+            }
+        }
+        setModalMode(null);
+        setApiResponse('');
+        setApiError('');
+    };
     
     // Simple markdown to HTML renderer
     const renderMarkdown = (text: string) => {
@@ -108,7 +252,7 @@ const IkigaiPage: NextPage = () => {
 
     return (
         <main className={`${kanit.className} bg-background text-foreground min-h-screen`}>
-            <div className="container mx-auto px-4 py-8 max-w-6xl">
+            <div className="container mx-auto px-4 py-8 max-w-6xl pt-20">
                 <header className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-primary">
                         ปรัชญาชีวิตของญี่ปุ่น "IKIGAI"
@@ -118,31 +262,35 @@ const IkigaiPage: NextPage = () => {
                     </h2>
                 </header>
 
-                <IkigaiDiagram data={ikigaiData} />
-                
-                <div className="text-center my-12">
-                    <button 
-                        onClick={getAdvice} 
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold py-4 px-8 rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 text-lg flex items-center gap-2 mx-auto"
-                    >
-                        ✨ รับคำแนะนำจากโค้ช AI สำหรับ Ikigai ของคุณ
-                    </button>
-                </div>
-                
-                <IkigaiForm data={ikigaiData} onDataChange={handleDataChange} />
+                <IkigaiForm 
+                    data={ikigaiData} 
+                    onDataChange={handleDataChange}
+                    onGenerateIntersections={generateIntersections}
+                    isGenerating={isGenerating}
+                    getAdvice={getAdvice}
+                    colors={colors}
+                    onColorChange={handleColorChange}
+                    savedAdvice={savedAdvice}
+                    onViewHistory={handleViewHistory}
+                >
+                    <IkigaiDiagram data={ikigaiData} colors={colors} />
+                </IkigaiForm>
             </div>
 
             {/* Result Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={() => setIsModalOpen(false)}>
+            {modalMode && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={handleCloseModal}>
                     <div className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-foreground/20" onClick={(e) => e.stopPropagation()}>
                         <div className="p-6 border-b border-foreground/20 flex justify-between items-center">
-                            <h3 className="text-2xl font-bold text-foreground">คำแนะนำจาก AI Coach</h3>
+                            <h3 className="text-2xl font-bold text-foreground">
+                                {modalMode === 'new' ? 'คำแนะนำจาก AI Coach' : 'ประวัติคำแนะนำ'}
+                            </h3>
                             <button 
-                                onClick={() => setIsModalOpen(false)} 
-                                className="text-foreground/60 hover:text-foreground text-3xl leading-none transition-colors"
+                                onClick={handleCloseModal} 
+                                className="text-foreground/60 hover:text-foreground text-3xl leading-none transition-colors p-1 rounded-full hover:bg-black/10"
+                                aria-label="Close Modal"
                             >
-                                &times;
+                                <X size={24} />
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto">
@@ -154,11 +302,33 @@ const IkigaiPage: NextPage = () => {
                             {apiError && (
                                 <p className="text-red-500 dark:text-red-400">{apiError}</p>
                             )}
-                            {apiResponse && (
+                            {apiResponse && !isLoading && (
                                 <div 
                                     className="prose prose-lg max-w-none leading-relaxed text-foreground [&_strong]:text-primary [&_li]:text-foreground/90" 
                                     dangerouslySetInnerHTML={{ __html: renderMarkdown(apiResponse) }} 
                                 />
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-foreground/20 flex justify-end items-center gap-3">
+                            {modalMode === 'new' && apiResponse && !isLoading && (
+                                <>
+                                    <button onClick={handleCopyAdvice} className="bg-gray-200 dark:bg-gray-700 text-foreground hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all text-sm">
+                                        <Copy size={16} /> คัดลอก
+                                    </button>
+                                    <button onClick={handleSaveAdvice} className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all text-sm">
+                                        <Save size={16} /> บันทึก
+                                    </button>
+                                </>
+                            )}
+                            {modalMode === 'history' && (
+                                <>
+                                    <button onClick={handleCopyAdvice} className="bg-gray-200 dark:bg-background text-foreground hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all text-sm">
+                                        <Copy size={16} /> คัดลอก
+                                    </button>
+                                    <button onClick={handleDeleteAdvice} className="bg-red-500 text-foreground hover:bg-red-600 flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all text-sm">
+                                        <Trash2 size={16} /> ลบ
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
