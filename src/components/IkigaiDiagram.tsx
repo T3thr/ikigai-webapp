@@ -151,10 +151,10 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
 
             {/* ข้อความในวงกลมหลัก */}
             {/* สิ่งที่รัก (บน) */}
-            <text x="450" y="210" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            <text x="450" y="180" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่รัก
             </text>
-            <foreignObject x="370" y="220" width="160" height="80">
+            <foreignObject x="370" y="190" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.love || 'กรุณากรอกข้อมูล'}
               </div>
@@ -171,10 +171,10 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             </foreignObject>
 
             {/* สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
-            <text x="450" y="670" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            <text x="450" y="640" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่ทำแล้วมีรายได้
             </text>
-            <foreignObject x="370" y="680" width="160" height="80">
+            <foreignObject x="370" y="650" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.paidFor || 'กรุณากรอกข้อมูล'}
               </div>
@@ -192,40 +192,40 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
 
             {/* ข้อความในส่วนที่ทับซ้อน (Secondary Intersections) */}
             {/* Passion (รัก + ถนัด) - บนซ้าย */}
-            <text x="365" y="350" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            <text x="355" y="320" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Passion
             </text>
-            <foreignObject x="300" y="355" width="130" height="60">
+            <foreignObject x="290" y="335" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.passion || 'รัก + ถนัด'}
               </div>
             </foreignObject>
 
             {/* Mission (รัก + โลกต้องการ) - บนขวา */}
-            <text x="535" y="350" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            <text x="545" y="320" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Mission
             </text>
-            <foreignObject x="470" y="355" width="130" height="60">
+            <foreignObject x="480" y="335" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.mission || 'รัก + โลกต้องการ'}
               </div>
             </foreignObject>
 
             {/* Profession (ถนัด + รายได้) - ล่างซ้าย */}
-            <text x="365" y="540" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            <text x="355" y="520" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Profession
             </text>
-            <foreignObject x="300" y="545" width="130" height="60">
+            <foreignObject x="290" y="535" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.profession || 'ถนัด + รายได้'}
               </div>
             </foreignObject>
 
             {/* Vocation (รายได้ + โลกต้องการ) - ล่างขวา */}
-            <text x="535" y="540" textAnchor="middle" className="fill-current text-primary font-bold text-base">
+            <text x="545" y="520" textAnchor="middle" className="fill-current text-primary font-bold text-base">
               Vocation
             </text>
-            <foreignObject x="470" y="545" width="130" height="60">
+            <foreignObject x="480" y="535" width="130" height="60">
               <div className="text-center text-xs text-foreground/70 leading-tight">
                 {data.vocation || 'รายได้ + โลกต้องการ'}
               </div>

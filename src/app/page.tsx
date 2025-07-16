@@ -82,23 +82,21 @@ const IkigaiPage: NextPage = () => {
       setApiError('');
 
       const prompt = `
-You are an Ikigai expert. Based on the user's inputs, generate concise, meaningful, and beautifully phrased suggestions for the four Ikigai intersections. Follow these principles strictly:
+Generate a concise JSON response with 4 keys (passion, mission, profession, vocation) in Thai language. Each value should be 1-2 sentences that meaningfully combine these inputs:
 
-1. Passion: Combination of What you love + What you are good at. This is "the things that ignite your daily passion" – what drives you to wake up excited every day. It emerges from loving what you do and being skilled at it. Often, lack of passion comes from missing one of these.
+Inputs:
+- Love: ${love}
+- Good at: ${goodAt}
+- Can be paid for: ${paidFor}
+- World needs: ${worldNeeds}
 
-2. Mission: Combination of What you love + What the world needs. This is your "mission" or purpose – why certain businesses or careers persist even if not highly profitable; it's what you love and what the world truly needs, creating value for others.
+Guidelines for each combination:
+- passion: Love + Good at = สิ่งที่เป็นแรงจูงใจในการทำสิ่งที่ทำได้ดีเพื่อสิ่งที่คุณรัก
+- mission: Love + World needs = สิ่งที่คุณรักและโลกต้องการ จะสร้างคุณค่าแก่คนรอบข้างและตัวคุณ
+- profession: Good at + Can be paid for = ทักษะที่สร้างรายได้
+- vocation: World needs + Can be paid for = สิ่งที่ตลาดต้องการและสามารถสร้างรายได้
 
-3. Profession: Combination of What you are good at + What you can be paid for. This is your "profession" – skills that generate income. Even if not your utmost passion, connecting all elements can turn loves into paid work.
-
-4. Vocation: Combination of What the world needs + What you can be paid for. This is your "vocation" – market-demanded skills that provide income, encouraging skill development to meet world needs.
-
-User inputs:
-- What you love: ${love}
-- What you are good at: ${goodAt}
-- What you can be paid for: ${paidFor}
-- What the world needs: ${worldNeeds}
-
-Respond ONLY with a valid JSON object containing keys: passion, mission, profession, vocation. Each value should be a beautifully phrased, concise paragraph in Thai language, incorporating the principles above and user's inputs meaningfully.
+Keep each response under 3 sentences. Focus on practical, actionable insights.
       `;
 
       try {
