@@ -108,8 +108,8 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             {/* วงกลมที่ 1: สิ่งที่รัก (บน) */}
             <circle 
               cx="450" 
-              cy="280" 
-              r="170" 
+              cy="300" 
+              r="190" 
               fill={colors?.love || 'var(--primary)'}
               fillOpacity="0.2"
               stroke={colors?.love || 'var(--primary)'}
@@ -118,9 +118,9 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             
             {/* วงกลมที่ 2: สิ่งที่ถนัด (ซ้าย) */}
             <circle 
-              cx="280" 
+              cx="300" 
               cy="450" 
-              r="170" 
+              r="190" 
               fill={colors?.goodAt || 'var(--secondary)'}
               fillOpacity="0.2"
               stroke={colors?.goodAt || 'var(--secondary)'}
@@ -130,8 +130,8 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             {/* วงกลมที่ 3: สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
             <circle 
               cx="450" 
-              cy="620" 
-              r="170" 
+              cy="600" 
+              r="190" 
               fill={colors?.paidFor || 'var(--primary)'}
               fillOpacity="0.15"
               stroke={colors?.paidFor || 'var(--primary)'}
@@ -140,9 +140,9 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             
             {/* วงกลมที่ 4: สิ่งที่โลกต้องการ (ขวา) */}
             <circle 
-              cx="620" 
+              cx="600" 
               cy="450" 
-              r="170" 
+              r="190" 
               fill={colors?.worldNeeds || 'var(--secondary)'}
               fillOpacity="0.15"
               stroke={colors?.worldNeeds || 'var(--secondary)'}
@@ -171,10 +171,10 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             </foreignObject>
 
             {/* สิ่งที่ทำแล้วมีรายได้ (ล่าง) */}
-            <text x="450" y="690" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
+            <text x="450" y="670" textAnchor="middle" className="fill-current text-foreground font-bold text-lg">
               สิ่งที่ทำแล้วมีรายได้
             </text>
-            <foreignObject x="370" y="700" width="160" height="80">
+            <foreignObject x="370" y="680" width="160" height="80">
               <div className="text-center text-sm text-foreground/80 leading-tight p-2">
                 {data.paidFor || 'กรุณากรอกข้อมูล'}
               </div>
@@ -235,12 +235,12 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             
             {/* 1. รัก + ถนัด + รายได้ (บนซ้าย) */}
             <path 
-              d="M 450 460 Q 450 350 250 300" 
+              d="M 520 500 Q 440 490 380 300" 
               stroke="var(--foreground)" 
               strokeWidth="1" 
               fill="none" 
               strokeDasharray="2,2"
-              transform="translate(-25, -50)"
+              transform="translate(-160, -50)"
             />
             <foreignObject x="120" y="220" width="160" height="40">
               <div className="text-xs text-foreground/80 leading-tight">
@@ -250,14 +250,14 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
 
             {/* 2. รัก + ถนัด + โลกต้องการ (บนขวา) */}
             <path 
-              d="M 450 460 Q 450 350 650 300" 
+              d="M 450 420 Q 490 320 650 300" 
               stroke="var(--foreground)" 
               strokeWidth="1" 
               fill="none" 
               strokeDasharray="2,2"
-              transform="translate(25, -50)"
+              transform="translate(0, -60)"
             />
-            <foreignObject x="630" y="220" width="160" height="40">
+            <foreignObject x="660" y="220" width="160" height="40">
               <div className="text-xs text-foreground/80 leading-tight">
                 เต็มไปด้วยความสุข หากแต่ไม่มีความมั่นคง
               </div>
@@ -265,14 +265,14 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
 
             {/* 3. รัก + รายได้ + โลกต้องการ (ล่างขวา) */}
             <path 
-              d="M 450 460 Q 450 550 650 600" 
+              d="M 480 450 Q 550 440 620 640" 
               stroke="var(--foreground)" 
               strokeWidth="1" 
               fill="none" 
               strokeDasharray="2,2"
-              transform="translate(25, 50)"
+              transform="translate(60, 0)"
             />
-            <foreignObject x="640" y="660" width="160" height="40">
+            <foreignObject x="660" y="660" width="160" height="40">
               <div className="text-xs text-foreground/80 leading-tight">
                 มีความอิ่มเอม ตื่นเต้น หากแต่รู้สึกไม่แน่นอน
               </div>
@@ -280,12 +280,12 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
 
             {/* 4. ถนัด + รายได้ + โลกต้องการ (ล่างซ้าย) */}
             <path 
-              d="M 450 460 Q 450 550 250 600" 
+              d="M 450 480 Q 440 600 250 600" 
               stroke="var(--foreground)" 
               strokeWidth="1" 
               fill="none" 
               strokeDasharray="2,2"
-              transform="translate(-25, 50)"
+              transform="translate(0, 50)"
             />
             <foreignObject x="110" y="660" width="160" height="40">
               <div className="text-xs text-foreground/80 leading-tight">
@@ -294,11 +294,11 @@ const IkigaiDiagram: React.FC<IkigaiDiagramProps> = ({ data, colors }) => {
             </foreignObject>
 
             {/* จุดศูนย์กลาง - Ikigai */}
-            <circle cx="450" cy="450" r="70" fill="var(--primary)" opacity="0.9" />
-            <text x="450" y="440" textAnchor="middle" className="fill-current text-primary-foreground font-bold text-2xl">
+            <circle cx="450" cy="450" r="45" fill="var(--primary)" opacity="0.5" />
+            <text x="450" y="444" textAnchor="middle" className="fill-current text-primary-foreground font-bold text-2xl">
               IKIGAI
             </text>
-            <text x="450" y="460" textAnchor="middle" className="fill-current text-primary-foreground text-sm">
+            <text x="450" y="468" textAnchor="middle" className="fill-current text-primary-foreground text-sm">
               อิคิไก
             </text>
           </svg>
